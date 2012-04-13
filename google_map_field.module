@@ -32,7 +32,7 @@ function google_map_field_field_widget_info() {
 function google_map_field_field_formatter_info() {
   $formats = array(
     'google_map_field_default' => array(
-      'label' => t('Default'),
+      'label' => t('Map'),
       'description' => t('Default display for Google map field.'),
       'field types' => array('google_map_field'),
     ),

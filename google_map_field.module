@@ -20,7 +20,7 @@ function google_map_field_field_info() {
 function google_map_field_field_widget_info() {
   return array(
     'google_map_field_widget' => array(
-      'label' => t('Default'),
+      'label' => t('Map'),
       'field types' => array('google_map_field'),
     ),
   );

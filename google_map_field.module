@@ -239,7 +239,9 @@ function _google_map_field_filter_process($text, $filter, $format) {
   $matches = array();
   preg_match_all('/\[gmf\:(.*)\] /x', $text, $matches);
   $i = 0;
+  $delta = 1000;
 
+  drupal_add_js('http://maps.googleapis.com/maps/api/js?sensor=false', 'external');
   while (isset($matches[1][$i])) {
 		$match = str_replace(']', '', str_replace('[', '', $matches[1][$i]));
 		$settings = explode(',', $match);
@@ -252,9 +254,7 @@ function _google_map_field_filter_process($text, $filter, $format) {
 				$map_settings[$key] = $val;
 			}
 		}
-	  drupal_add_js('http://maps.googleapis.com/maps/api/js?sensor=false', 'external');
-		$delta = 1000 + $i;
-	  $js = '
+    $js = '
 	    var map_' . $delta . ';
 	    jQuery(document).ready(function(){
 	      var latlng = new google.maps.LatLng(' . $map_settings['lat'] . ', ' . $map_settings['lon'] . ');
@@ -273,15 +273,19 @@ function _google_map_field_filter_process($text, $filter, $format) {
 	  	});
 	  ';
 	  drupal_add_js($js, 'inline');
-		$out = str_replace($matches[0][$i], '<div id="inline_google_map_field_' . $delta . '" class="inline-google-map-field" style="width: ' . $map_settings['width'] . 'px; height: ' . $map_settings['height'] . 'px;"></div>', $out);
-		$i++;
+	  $replace = str_replace(']', '\\]/', str_replace('[', '/\\[', $matches[0][$i]));
+	  $replacement = '<div id="inline_google_map_field_' . $delta . '" class="inline-google-map-field" style="width: ' . $map_settings['width'] . 'px; height: ' . $map_settings['height'] . 'px;"></div>';
+		//$out = str_replace($matches[0][$i], $replacement, $out, 1);
+		$out = preg_replace($replace, $replacement, $out, 1);
+    $delta++;
+    $i++;
   }
 
   return $out;
 }
 
 /**
- *	
+ *
  */
 function _google_map_field_filter_tips($filter, $format, $long) {
   return t("To insert a google map field, <a href='/google-map-field/token-builder' target='_new'>click here for the token builder</a> (opens in a new window)");

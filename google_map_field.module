@@ -1,6 +1,22 @@
 <?php
 
 /**
+ *	Implements hook_menu().
+ */
+function google_map_field_menu() {
+	$items = array();
+
+	$items['google-map-field/token-builder'] = array(
+		'title' => t('Google Map Field Inline Token Builder'),
+		'access callback' => 'user_is_logged_in',
+		'page callback' => 'google_map_field_token_builder',
+		'type' => MENU_NORMAL_ITEM,
+	);
+
+	return $items;
+}
+
+/**
  * Implements hook_field_info().
  */
 function google_map_field_field_info() {
@@ -202,4 +218,91 @@ function google_map_field_field_widget_form(&$form, &$form_state, $field, $insta
   ';
   drupal_add_js($js, 'inline');
   return $element;
+}
+
+/**
+ * Implement hook_filter_info().
+ */
+function google_map_field_filter_info() {
+  $filters['google_map_field_token'] = array(
+    'title' => t('Google Map Field'),
+    'description' => t('Use tokens to insert Google Map Fields.'),
+    'process callback' => '_google_map_field_filter_process',
+    'cache' => FALSE,
+    'tips callback' => '_google_map_field_filter_tips',
+  );
+  return $filters;
+}
+
+function _google_map_field_filter_process($text, $filter, $format) {
+  $out = $text;
+  $matches = array();
+  preg_match_all('/\[gmf\:(.*)\] /x', $text, $matches);
+  $i = 0;
+
+  while (isset($matches[1][$i])) {
+		$match = str_replace(']', '', str_replace('[', '', $matches[1][$i]));
+		$settings = explode(',', $match);
+		$map_settings = array();
+		foreach($settings as $setting) {
+	    $offset = strpos($setting, '=');
+			if ($offset !== FALSE) {
+				$key = trim(substr($setting, 0, $offset));
+				$val = trim(substr($setting, $offset+1));
+				$map_settings[$key] = $val;
+			}
+		}
+	  drupal_add_js('http://maps.googleapis.com/maps/api/js?sensor=false', 'external');
+		$delta = 1000 + $i;
+	  $js = '
+	    var map_' . $delta . ';
+	    jQuery(document).ready(function(){
+	      var latlng = new google.maps.LatLng(' . $map_settings['lat'] . ', ' . $map_settings['lon'] . ');
+	      var mapOptions = {
+	        zoom: ' . $map_settings['zoom'] . ',
+	        center: latlng,
+	        streetViewControl: false,
+	        mapTypeId: google.maps.MapTypeId.ROADMAP
+	      };
+	      map_' . $delta . ' = new google.maps.Map(document.getElementById("inline_google_map_field_' . $delta . '"), mapOptions);
+	      // add a marker to the map for the dealer
+	      marker = new google.maps.Marker({
+	        position: latlng,
+	        map: map_' . $delta . ',
+	      });
+	  	});
+	  ';
+	  drupal_add_js($js, 'inline');
+		$out = str_replace($matches[0][$i], '<div id="inline_google_map_field_' . $delta . '" class="inline-google-map-field" style="width: ' . $map_settings['width'] . 'px; height: ' . $map_settings['height'] . 'px;"></div>', $out);
+		$i++;
+  }
+
+  return $out;
+}
+
+/**
+ *	
+ */
+function _google_map_field_filter_tips($filter, $format, $long) {
+  return t("To insert a google map field, <a href='/google-map-field/token-builder' target='_new'>click here for the token builder</a> (opens in a new window)");
+}
+
+/**
+ *	Return the page that will open in a new window (linked to from filter_tips above), that
+ *	will allow the user to build a google map field token for inline content insertion.
+ */
+function google_map_field_token_builder() {
+  return theme('google_map_field_token_builder');
+}
+
+function google_map_field_theme() {
+	$themes = array (
+		'google_map_field_token_builder' => array(
+			'template' => 'google_map_field_token_builder',
+			'arguments' => array(),
+			'path' => drupal_get_path('module', 'google_map_field') . '/theme',
+			'render element' => 'page',
+		),
+	);
+	return $themes;
 }

@@ -1,6 +1,11 @@
 <?php
 
 /**
+* @file
+* Specialised hook to register plugin presence with the WYSIWYG module.
+*/
+
+/**
  *  WYSIWYG module integration for map token builder
  */
 function google_map_field_gmf_tokenbuilder_plugin() {

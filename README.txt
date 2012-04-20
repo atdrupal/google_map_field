@@ -41,9 +41,9 @@ see http://drupal.org/documentation/install/modules-themes/modules-7
 CONFIGURATION
 -------------
 
-There are no specific config options for this module.  To use it you simply add the
-"Google Map Field" to the entity on which you wish to use it (node/taxonomy term/user
-etc).
+There are no specific config options for this module.  To use it you simply
+add the "Google Map Field" to the entity on which you wish to use it
+(node/taxonomy term/user etc).
 
-To enable the WYSIWYG feature you must use the enlabed plugins/buttons feature of
-the WYSIWYG module to enable the Google Map Field Token Builder
+To enable the WYSIWYG feature you must use the enlabed plugins/buttons feature
+of the WYSIWYG module to enable the Google Map Field Token Builder

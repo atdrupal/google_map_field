@@ -182,7 +182,7 @@ function google_map_field_field_widget_form(&$form, &$form_state, $field, $insta
   );
   // Add the google API.
   drupal_add_js('http://maps.googleapis.com/maps/api/js?sensor=false', 'external');
-  // get the map details
+  // Get the map details.
   $lat = isset($items[$delta]['lat']) ? $items[$delta]['lat'] : 51.5171;
   $lon = isset($items[$delta]['lon']) ? $items[$delta]['lon'] : -0.15;
   $zom = isset($items[$delta]['zoom']) ? $items[$delta]['zoom'] : 13;
@@ -222,7 +222,7 @@ function google_map_field_field_widget_form(&$form, &$form_state, $field, $insta
 }
 
 /**
- * Implement hook_filter_info().
+ * Implements hook_filter_info().
  */
 function google_map_field_filter_info() {
   $filters['google_map_field_token'] = array(

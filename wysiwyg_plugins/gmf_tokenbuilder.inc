@@ -1,9 +1,9 @@
 <?php
 
 /**
-* @file
-* Specialised hook to register plugin presence with the WYSIWYG module.
-*/
+ * @file
+ * Specialised hook to register plugin presence with the WYSIWYG module.
+ */
 
 /**
  *  WYSIWYG module integration for map token builder

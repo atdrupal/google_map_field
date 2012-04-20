@@ -87,18 +87,18 @@ function google_map_field_field_formatter_view($object_type, $object, $field, $i
 }
 
 /**
- *  implements hook_format_field().
+ *  Implements hook_format_field().
  */
 function google_map_field_format_field($item, $delta) {
-  // add the google API
+  // Add the google API.
   drupal_add_js('http://maps.googleapis.com/maps/api/js?sensor=false', 'external');
-  // get the map details
+  // Get the map details.
   $lat = $item['lat'];
   $lon = $item['lon'];
   $wth = $item['map_width'];
   $hth = $item['map_height'];
   $zom = $item['zoom'];
-  // build the inline JS to build the map
+  // Build the inline JS to build the map.
   $js = '
     var map_' . $delta . ';
     jQuery(document).ready(function(){
@@ -121,12 +121,12 @@ function google_map_field_format_field($item, $delta) {
 
   $element = array(
     '#type' => 'container',
-    '#attributes' => array( 'class' => array( 'field-item') ),
+    '#attributes' => array('class' => array('field-item')),
   );
   $element['google_map_field'] = array(
     'item' => array(
       '#type' => 'container',
-      '#attributes' => array( 'class' => array( 'field-item') ),
+      '#attributes' => array('class' => array('field-item')),
       'text' => array(
         '#markup' => '<div id="google_map_field_' . $delta . '" style="width: ' . $wth . 'px; height: ' . $hth . 'px;"></div>',
       ),
@@ -136,7 +136,7 @@ function google_map_field_format_field($item, $delta) {
 }
 
 /**
- *  implements hook_field_widget_form().
+ *  Implements hook_field_widget_form().
  */
 function google_map_field_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
   $fname = str_replace('_', '-', $element['#field_name']);
@@ -180,13 +180,13 @@ function google_map_field_field_widget_form(&$form, &$form_state, $field, $insta
     '#prefix' => '<div style="float: left; width: 65%;">',
     '#suffix' => '</div></div>',
   );
-  // add the google API
+  // Add the google API.
   drupal_add_js('http://maps.googleapis.com/maps/api/js?sensor=false', 'external');
   // get the map details
   $lat = isset($items[$delta]['lat']) ? $items[$delta]['lat'] : 51.5171;
   $lon = isset($items[$delta]['lon']) ? $items[$delta]['lon'] : -0.15;
   $zom = isset($items[$delta]['zoom']) ? $items[$delta]['zoom'] : 13;
-  // build the inline JS to build the map
+  // Build the inline JS to build the map.
   $js = '
     var map_' . $delta . ';
     function getCoords_' . $delta . '(latlng) {
@@ -254,7 +254,7 @@ function _google_map_field_filter_process($text, $filter, $format) {
       $offset = strpos($setting, '=');
       if ($offset !== FALSE) {
         $key = trim(substr($setting, 0, $offset));
-        $val = trim(substr($setting, $offset+1));
+        $val = trim(substr($setting, $offset + 1));
         $map_settings[$key] = $val;
       }
     }
@@ -308,8 +308,9 @@ function google_map_field_wysiwyg_include_directory($type) {
 /**
  *  Implements hook_form_alter().
  *
- *  Ensures that the necessary libraries and Javascript is added to the node and comment forms
- *  so that the WYSIWYG google map field editor works
+ *  Ensures that the necessary libraries and Javascript is added to the
+ *  node and comment forms so that the WYSIWYG google map field editor
+ *  works
  */
 function google_map_field_form_alter(&$form, $form_state, $form_id) {
   if (strpos($form_id, 'node_form') !== FALSE || strpos($form_id, 'comment') !== FALSE) {

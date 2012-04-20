@@ -1,6 +1,14 @@
 <?php
 
 /**
+ *  @file
+ *  This file defines all the necessary hooks and functions to create
+ *  a Google Map Field field type and also a WYSIWYG editor plugin
+ *  for inserting maps directly into filtered content.
+ */
+
+
+/**
  *  Implements hook_menu().
  */
 function google_map_field_menu() {

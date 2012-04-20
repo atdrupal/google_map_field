@@ -37,6 +37,11 @@ function google_map_field_field_schema($field) {
         'length' => 10,
         'not null' => FALSE,
       ),
+      'name' => array(
+        'type' => 'varchar',
+        'length' => 128,
+        'not null' => FALSE,
+      ),
     ),
   );
 }

@@ -106,6 +106,7 @@ function google_map_field_format_field($item, $delta) {
   $wth = $item['map_width'];
   $hth = $item['map_height'];
   $zom = $item['zoom'];
+  $name = $item['name'];
   // Build the inline JS to build the map.
   $js = '
     var map_' . $delta . ';
@@ -136,7 +137,7 @@ function google_map_field_format_field($item, $delta) {
       '#type' => 'container',
       '#attributes' => array('class' => array('field-item')),
       'text' => array(
-        '#markup' => '<div id="google_map_field_' . $delta . '" style="width: ' . $wth . 'px; height: ' . $hth . 'px;"></div>',
+        '#markup' => '<div class="google-map-field-label">' . $name . '</div><div id="google_map_field_' . $delta . '" style="width: ' . $wth . 'px; height: ' . $hth . 'px;"></div>',
       ),
     ),
   );
@@ -156,11 +157,16 @@ function google_map_field_field_widget_form(&$form, &$form_state, $field, $insta
     '#collapsible' => TRUE,
     '#collapsed' => FALSE,
   );
+  $element['name'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Map Name'),
+    '#default_value' => isset($items[$delta]['name']) ? $items[$delta]['name'] : NULL,
+    '#prefix' => '<div class="clearfix"><div style="float: left; width: 30%;">',
+  );
   $element['lat'] = array(
     '#type' => 'textfield',
     '#title' => t('Latitude'),
     '#default_value' => isset($items[$delta]['lat']) ? $items[$delta]['lat'] : NULL,
-    '#prefix' => '<div class="clearfix"><div style="float: left; width: 30%;">',
   );
   $element['lon'] = array(
     '#type' => 'textfield',

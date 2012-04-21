@@ -7,7 +7,6 @@
  * for inserting maps directly into filtered content.
  */
 
-
 /**
  *  Implements hook_menu().
  */
@@ -15,7 +14,6 @@ function google_map_field_menu() {
   $items = array();
 
   $items['google-map-field/token-builder'] = array(
-    'title' => 'Google Map Field Inline Token Builder',
     'access callback' => TRUE,
     'page callback' => 'drupal_get_form',
     'page arguments' => array('google_map_field_tokenbuilder_form'),
@@ -137,7 +135,7 @@ function google_map_field_format_field($item, $delta) {
       '#type' => 'container',
       '#attributes' => array('class' => array('field-item')),
       'text' => array(
-        '#markup' => '<div class="google-map-field"><div class="google-map-field-label">' . $name . '</div><div id="google_map_field_' . $delta . '" style="width: ' . $wth . 'px; height: ' . $hth . 'px;"></div></div>',
+        '#markup' => theme('google_map_field', array('name' => $name, 'delta' => $delta, 'width' => $wth, 'height' => $hth)),
       ),
     ),
   );
@@ -414,4 +412,17 @@ function google_map_field_tokenbuilder_form($form, &$form_state) {
   );
 
   return $form;
+}
+
+function google_map_field_theme($existing, $type, $theme, $path) {
+  if($type == 'module') {
+    return array(
+      'google_map_field' => array(
+        'variables' => array('name' => NULL, 'delta' => NULL, 'width' => NULL, 'height' => NULL),
+        'template' => 'google-map-field',
+        'path' => drupal_get_path('module', 'google_map_field') . '/theme',
+      ),
+    );
+  }
+  return array();
 }

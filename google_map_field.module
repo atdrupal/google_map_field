@@ -139,7 +139,7 @@ function google_map_field_format_field($item, $delta) {
           'name' => $name,
           'delta' => $delta,
           'width' => $wth,
-          'height' => $hth
+          'height' => $hth,
         )),
       ),
     ),
@@ -416,14 +416,14 @@ function google_map_field_tokenbuilder_form($form, &$form_state) {
  *  Implements hook_theme().
  */
 function google_map_field_theme($existing, $type, $theme, $path) {
-  if($type == 'module') {
+  if ($type == 'module') {
     return array(
       'google_map_field' => array(
         'variables' => array(
           'name' => NULL,
           'delta' => NULL,
           'width' => NULL,
-          'height' => NULL
+          'height' => NULL,
         ),
         'template' => 'google-map-field',
         'path' => drupal_get_path('module', 'google_map_field') . '/theme',

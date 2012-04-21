@@ -148,7 +148,7 @@ function google_map_field_format_field($item, $delta) {
 function google_map_field_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
   $fname = str_replace('_', '-', $element['#field_name']);
   $element['#title'] = t('Google Map Field Settings');
-  $element['#description'] = '<p>' . t('To set a location for the map, use the controls to zoom in or out and drag the map to find the correct area.  Once you have found the correct location click that point to set the map.') . '</p>';
+  $element['#description'] = '<p>' . t('To set a location for the map, use the controls to zoom in or out and drag the map to find the correct area. Once you have found the correct location click that point to set the map.') . '</p>';
   $element += array(
     '#type' => 'fieldset',
     '#tree' => TRUE,
@@ -297,13 +297,6 @@ function _google_map_field_filter_process($text, $filter, $format) {
   }
 
   return $out;
-}
-
-/**
- *  Implements hook_filter_tips().
- */
-function _google_map_field_filter_tips($filter, $format, $long) {
-  return t("To insert a google map field, <a href='/google-map-field/token-builder' target='_new'>click here for the token builder</a> (opens in a new window)");
 }
 
 /**

@@ -137,7 +137,7 @@ function google_map_field_format_field($item, $delta) {
       '#type' => 'container',
       '#attributes' => array('class' => array('field-item')),
       'text' => array(
-        '#markup' => '<div class="google-map-field-label">' . $name . '</div><div id="google_map_field_' . $delta . '" style="width: ' . $wth . 'px; height: ' . $hth . 'px;"></div>',
+        '#markup' => '<div class="google-map-field"><div class="google-map-field-label">' . $name . '</div><div id="google_map_field_' . $delta . '" style="width: ' . $wth . 'px; height: ' . $hth . 'px;"></div></div>',
       ),
     ),
   );

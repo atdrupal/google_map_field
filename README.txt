@@ -5,6 +5,7 @@ CONTENTS OF THIS FILE
   * Introduction
   * Installation
   * Configuration
+  * Known Issues
 
 
 INTRODUCTION
@@ -47,3 +48,9 @@ add the "Google Map Field" to the entity on which you wish to use it
 
 To enable the WYSIWYG feature you must use the enlabed plugins/buttons feature
 of the WYSIWYG module to enable the Google Map Field Token Builder
+
+KNOWN ISSUES
+------------
+
+At the moment if you specify 'number of values' as anything other than 1 the
+maps disappear in the node edit form when you click 'Add another'

@@ -88,6 +88,7 @@ function google_map_field_field_is_empty($item, $field) {
  */
 function google_map_field_field_formatter_view($object_type, $object, $field, $instance, $langcode, $items, $display) {
   drupal_add_css(drupal_get_path('module', 'google_map_field') . '/css/google_map_field.css');
+  drupal_add_js('http://maps.googleapis.com/maps/api/js?sensor=false', 'external');
   $element = array();
   foreach ($items as $delta => $item) {
     $element[$delta] = google_map_field_format_field($item, $delta);
@@ -99,35 +100,16 @@ function google_map_field_field_formatter_view($object_type, $object, $field, $i
  *  Implements hook_format_field().
  */
 function google_map_field_format_field($item, $delta) {
-  // Add the google API.
-  drupal_add_js('http://maps.googleapis.com/maps/api/js?sensor=false', 'external');
-  // Get the map details.
-  $lat = $item['lat'];
-  $lon = $item['lon'];
-  $wth = $item['map_width'];
-  $hth = $item['map_height'];
-  $zom = $item['zoom'];
-  $name = $item['name'];
-  // Build the inline JS to build the map.
-  $js = '
-    var map_' . $delta . ';
-    jQuery(document).ready(function(){
-      var latlng = new google.maps.LatLng(' . $lat . ', ' . $lon . ');
-      var mapOptions = {
-        zoom: ' . $zom . ',
-        center: latlng,
-        streetViewControl: false,
-        mapTypeId: google.maps.MapTypeId.ROADMAP
-      };
-      map_' . $delta . ' = new google.maps.Map(document.getElementById("google_map_field_' . $delta . '"), mapOptions);
-      // add a marker to the map for the dealer
-      marker = new google.maps.Marker({
-        position: latlng,
-        map: map_' . $delta . ',
-      });
-    });
-  ';
-  drupal_add_js($js, 'inline');
+  // Get the map details and place in an array to pass to Drupal.settings.
+  $settings = array(
+    'gmf_node_display' => array(
+      'lat' => $item['lat'],
+      'lon' => $item['lon'],
+      'zoom' => $item['zoom'],
+    ),
+  );
+  drupal_add_js(drupal_get_path('module', 'google_map_field') . '/js/google_map_field_node_display.js', 'file');
+  drupal_add_js($settings, 'setting');
 
   $element = array(
     '#type' => 'container',
@@ -139,10 +121,10 @@ function google_map_field_format_field($item, $delta) {
       '#attributes' => array('class' => array('field-item')),
       'text' => array(
         '#markup' => theme('google_map_field', array(
-          'name' => $name,
+          'name' => $item['name'],
           'delta' => $delta,
-          'width' => $wth,
-          'height' => $hth,
+          'width' => $item['map_width'],
+          'height' => $item['map_height'],
         )),
       ),
     ),
@@ -196,48 +178,27 @@ function google_map_field_field_widget_form(&$form, &$form_state, $field, $insta
     '#suffix' => '</div>',
   );
   $element['map'] = array(
-    '#markup' => '<div id="google_map_picker_' . $delta . '" style="width: 100%; height: 350px;"></div>',
+    '#markup' => '<div id="google_map_picker" style="width: 100%; height: 350px;"></div>',
     '#prefix' => '<div style="float: left; width: 65%;">',
     '#suffix' => '</div></div>',
   );
   // Add the google API.
   drupal_add_js('http://maps.googleapis.com/maps/api/js?sensor=false', 'external');
-  // Get the map details.
+  // Get the map details and place in an array to pass to Drupal.settings.
   $lat = isset($items[$delta]['lat']) ? $items[$delta]['lat'] : 51.5171;
   $lon = isset($items[$delta]['lon']) ? $items[$delta]['lon'] : -0.15;
-  $zom = isset($items[$delta]['zoom']) ? $items[$delta]['zoom'] : 13;
+  $zoom = isset($items[$delta]['zoom']) ? $items[$delta]['zoom'] : 13;
   // Build the inline JS to build the map.
-  $js = '
-    var map_' . $delta . ';
-    function getCoords_' . $delta . '(latlng) {
-      marker_' . $delta . '.setPosition(latlng);
-      map_' . $delta . '.setCenter(latlng);
-      document.getElementById("edit-' . $fname . '-und-' . $delta . '-lat").value = latlng.lat();
-      document.getElementById("edit-' . $fname . '-und-' . $delta . '-lon").value = latlng.lng();
-    }
-    jQuery(document).ready(function(){
-      var latlng = new google.maps.LatLng(' . $lat . ', ' . $lon . ');
-      var mapOptions = {
-        zoom: ' . $zom . ',
-        center: latlng,
-        streetViewControl: false,
-        mapTypeId: google.maps.MapTypeId.ROADMAP
-      };
-      map_' . $delta . ' = new google.maps.Map(document.getElementById("google_map_picker_' . $delta . '"), mapOptions);
-      marker_' . $delta . ' = new google.maps.Marker({
-        position: latlng,
-        map: map_' . $delta . ',
-      });
-      // add a click listener to the map
-      google.maps.event.addListener(map_' . $delta . ', "click", function(event) {
-        getCoords_' . $delta . '(event.latLng);
-      });
-      google.maps.event.addListener(map_' . $delta . ', "zoom_changed", function(event) {
-        document.getElementById("edit-' . $fname . '-und-' . $delta . '-zoom").value = map_' . $delta . '.getZoom();
-      });
-    });
-  ';
-  drupal_add_js($js, 'inline');
+  $settings = array(
+    'gmf_widget_form' => array(
+      'lat' => $lat,
+      'lon' => $lon,
+      'zoom' => $zoom,
+      'fname' => $fname,
+    ),
+  );
+  drupal_add_js($settings, 'setting');
+  drupal_add_js(drupal_get_path('module', 'google_map_field') . '/js/google_map_field_widget_form.js');
   return $element;
 }
 
@@ -408,7 +369,6 @@ function google_map_field_theme($existing, $type, $theme, $path) {
  *  Implements form_field_ui_field_edit_form_alter().
  */
 function google_map_field_form_field_ui_field_edit_form_alter(&$form, &$form_state) {
-  dpm('hello');
   if ($form['#field']['type'] == 'google_map_field') {
     $form['field']['cardinality']['#default_value'] = 1;
     $form['field']['#access'] = FALSE;

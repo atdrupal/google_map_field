@@ -1,5 +1,4 @@
 name = Google Map Field
 description = Defines a Google map field.
 core = 7.x
-version = "7.x-1.x"
 package = Fields

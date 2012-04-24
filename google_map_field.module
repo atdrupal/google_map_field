@@ -209,9 +209,8 @@ function google_map_field_filter_info() {
   $filters['google_map_field_token'] = array(
     'title' => t('Google Map Field'),
     'description' => t('Use tokens to insert Google Map Fields.'),
-    'process callback' => '_google_map_field_filter_process',
+    'process callback' => 'google_map_field_filter_process',
     'cache' => FALSE,
-    'tips callback' => '_google_map_field_filter_tips',
   );
   return $filters;
 }
@@ -219,7 +218,7 @@ function google_map_field_filter_info() {
 /**
  *  Process callback for hook_filter_info().
  */
-function _google_map_field_filter_process($text, $filter, $format) {
+function google_map_field_filter_process($text, $filter, $format) {
   $out = $text;
   $matches = array();
   preg_match_all('/\[gmf\:(.*)\] /x', $text, $matches);
@@ -307,7 +306,8 @@ function google_map_field_tokenbuilder_form($form, &$form_state) {
 
   $form = array();
   $form['token_builder']['map'] = array(
-    '#markup' => '<div id="google_map_field_selector" style="width: 300px; height: 250px;"></div>',
+    //'#markup' => '<div id="google_map_field_selector" style="width: 300px; height: 250px;"></div>',
+		'#markup' => '<div id="google_map_field_selector"></div>',
     '#prefix' => '<div class="google-map-field-tokenbuilder clearfix"><div class="google-map-field-tokenbuilder-map">',
     '#suffix' => '</div>',
   );

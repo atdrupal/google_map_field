@@ -11,3 +11,8 @@
 .google-map-field-tokenbuilder-fields {
   float: left;
 }
+
+#google_map_field_selector {
+	height: 250px;
+	width: 300px;
+}

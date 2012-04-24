@@ -26,6 +26,16 @@
         btns = {};
         btns[Drupal.t('Insert map')] = function () {
           var token = dialogdiv.contents().find('#edit-token').val();
+          var mapWidth = dialogdiv.contents().find('#edit-width').val();
+          var mapHeight = dialogdiv.contents().find('#edit-height').val();
+          if (isNaN(mapWidth) || mapWidth > 600 || mapWidth < 100) {
+            alert('Your map width must be between 100 and 600 pixles.');
+            return false;
+          }
+          if (isNaN(mapHeight) || mapHeight > 600 || mapHeight < 100) {
+            alert('Your map height must be between 100 and 600 pixles.');
+            return false;
+          }
           var editor_id = instanceId;
           token = ' [gmf:' + token + '] ';
           Drupal.wysiwyg.plugins.gmf_tokenbuilder.insertIntoEditor(token, editor_id);

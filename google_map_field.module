@@ -153,13 +153,11 @@ function google_map_field_field_widget_form(&$form, &$form_state, $field, $insta
     '#type' => 'textfield',
     '#title' => t('Latitude'),
     '#default_value' => isset($items[$delta]['lat']) ? $items[$delta]['lat'] : NULL,
-    '#attributes' => array('readonly' => 'readonly'),
   );
   $element['lon'] = array(
     '#type' => 'textfield',
     '#title' => t('Longitude'),
     '#default_value' => isset($items[$delta]['lon']) ? $items[$delta]['lon'] : NULL,
-    '#attributes' => array('readonly' => 'readonly'),
   );
   $element['zoom'] = array(
     '#type' => 'textfield',
@@ -378,6 +376,7 @@ function google_map_field_theme($existing, $type, $theme, $path) {
  */
 function google_map_field_form_field_ui_field_edit_form_alter(&$form, &$form_state) {
   if ($form['#field']['type'] == 'google_map_field') {
+    drupal_add_css(drupal_get_path('module', 'google_map_field') . '/css/google_map_field.css');
     $form['field']['cardinality']['#default_value'] = 1;
     $form['field']['#access'] = FALSE;
   }

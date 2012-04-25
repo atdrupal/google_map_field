@@ -16,7 +16,7 @@ function google_map_field_help($path, $arg) {
     case 'admin/help#google_map_field':
       $output = 'Add Google Map type fields to content types, or enable an inline map token generator.';
       if (module_exists('wysiwyg')) {
-        $output .= '<p>Edit your ' . l('WYSIWYG profiles', 'admin/config/content/wysiwyg') . ' to enable the Google Map Field Token Genertor (under buttons and plugins).</p>';
+        $output .= '<p>Edit your ' . l(t('WYSIWYG profiles'), 'admin/config/content/wysiwyg') . ' to enable the Google Map Field Token Genertor (under buttons and plugins).</p>';
       }
   }
   return $output;

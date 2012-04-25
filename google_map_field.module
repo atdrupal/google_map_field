@@ -152,11 +152,18 @@ function google_map_field_field_widget_form(&$form, &$form_state, $field, $insta
   $fname = str_replace('_', '-', $element['#field_name']);
   $element['#title'] = t('Google Map Field Settings');
   $element['#description'] = '<p>' . t('To set a location for the map, use the controls to zoom in or out and drag the map to find the correct area. Once you have found the correct location click that point to set the map.') . '</p>';
+
   $element += array(
     '#type' => 'fieldset',
     '#tree' => TRUE,
     '#collapsible' => TRUE,
     '#collapsed' => FALSE,
+    '#after_build' => array('google_map_field_after_build'),
+    '#fname' => $fname,
+  );
+  $element['fname'] = array(
+    '#type' => 'hidden',
+    '#value' => $fname,
   );
   $element['name'] = array(
     '#type' => 'textfield',
@@ -167,17 +174,21 @@ function google_map_field_field_widget_form(&$form, &$form_state, $field, $insta
   $element['lat'] = array(
     '#type' => 'textfield',
     '#title' => t('Latitude'),
+    '#required' => TRUE,
+    '#element_validate' => array('google_map_field_latlon_validate'),
     '#default_value' => isset($items[$delta]['lat']) ? $items[$delta]['lat'] : NULL,
   );
   $element['lon'] = array(
     '#type' => 'textfield',
     '#title' => t('Longitude'),
+    '#required' => TRUE,
+    '#element_validate' => array('google_map_field_latlon_validate'),
     '#default_value' => isset($items[$delta]['lon']) ? $items[$delta]['lon'] : NULL,
   );
   $element['zoom'] = array(
     '#type' => 'textfield',
     '#title' => t('Zoom'),
-    '#default_value' => isset($items[$delta]['zoom']) ? $items[$delta]['zoom'] : 13,
+    '#default_value' => isset($items[$delta]['zoom']) ? $items[$delta]['zoom'] : 9,
     '#attributes' => array('readonly' => 'readonly'),
     '#suffix' => '</div>',
   );
@@ -186,24 +197,18 @@ function google_map_field_field_widget_form(&$form, &$form_state, $field, $insta
     '#prefix' => '<div class="google_map_field_left65pc">',
     '#suffix' => '</div></div>',
   );
-  // Add the google API.
-  drupal_add_js('http://maps.googleapis.com/maps/api/js?sensor=false', 'external');
-  // Get the map details and place in an array to pass to Drupal.settings.
-  $lat = isset($items[$delta]['lat']) ? $items[$delta]['lat'] : 51.5171;
-  $lon = isset($items[$delta]['lon']) ? $items[$delta]['lon'] : -0.15;
-  $zoom = isset($items[$delta]['zoom']) ? $items[$delta]['zoom'] : 13;
-  // Build the inline JS to build the map.
-  $settings = array(
-    'gmf_widget_form' => array(
-      'lat' => $lat,
-      'lon' => $lon,
-      'zoom' => $zoom,
-      'fname' => $fname,
-    ),
-  );
-  drupal_add_js($settings, 'setting');
-  drupal_add_js(drupal_get_path('module', 'google_map_field') . '/js/google_map_field_widget_form.js');
+
   return $element;
+}
+
+/**
+ *  Custom validation function for latitude/longitude fields.
+ */
+function google_map_field_latlon_validate($element, $form, &$form_state) {
+  if (!is_numeric($element['#value'])) {
+    $field = implode('][', $element['#array_parents']);
+    form_set_error($field, t('Invalid value - ') . $element['#title']);
+  }
 }
 
 /**
@@ -225,7 +230,7 @@ function google_map_field_filter_info() {
 function google_map_field_filter_process($text, $filter, $format) {
   $out = $text;
   $matches = array();
-  preg_match_all('/\[gmf\:(.*)\] /x', $text, $matches);
+  preg_match_all('/\[gmf\:([^\]]*)\]/', $text, $matches);
   $i = 0;
   $delta = 1000;
 
@@ -261,7 +266,7 @@ function google_map_field_filter_process($text, $filter, $format) {
       });
     ';
     drupal_add_js($js, 'inline');
-    $replace = str_replace(']', '\\]/', str_replace('[', '/\\[', $matches[0][$i]));
+    $replace = str_replace(']', '\]/', str_replace('[', '/\\[', $matches[0][$i]));
     $settings = array(
       'delta' => $delta,
       'width' => $map_settings['width'],
@@ -288,22 +293,29 @@ function google_map_field_wysiwyg_include_directory($type) {
 }
 
 /**
- *  Implements hook_form_alter().
- *
- *  Ensures that the necessary libraries and Javascript is added to the
- *  node and comment forms so that the WYSIWYG google map field editor
- *  works
+ *  Function to add necessary JS and CSS after form has built.
  */
-function google_map_field_form_alter(&$form, $form_state, $form_id) {
-  if (strpos($form_id, 'node_form') !== FALSE || strpos($form_id, 'comment') !== FALSE) {
-    drupal_add_js('http://maps.googleapis.com/maps/api/js?sensor=false', 'external');
-    drupal_add_js(drupal_get_path('module', 'google_map_field') . '/js/google_map_field_edit_form.js', 'file');
-    drupal_add_css(drupal_get_path('module', 'google_map_field') . '/wysiwyg_plugins/gmf_tokenbuilder/css/gmf_tokenbuilder.css');
-    drupal_add_css(drupal_get_path('module', 'google_map_field') . '/css/google_map_field.css');
-    drupal_add_library('system', 'ui.dialog');
-    drupal_add_library('system', 'ui.draggable');
-    drupal_add_js(array('google_map_field' => array('current_form' => $form['form_build_id']['#value'])), 'setting');
-  }
+function google_map_field_after_build($form, &$form_state) {
+  drupal_add_js('http://maps.googleapis.com/maps/api/js?sensor=false', 'external');
+  drupal_add_js(drupal_get_path('module', 'google_map_field') . '/js/google_map_field_edit_form.js', 'file');
+  drupal_add_js(drupal_get_path('module', 'google_map_field') . '/js/google_map_field_widget_form.js', 'file');
+  drupal_add_css(drupal_get_path('module', 'google_map_field') . '/wysiwyg_plugins/gmf_tokenbuilder/css/gmf_tokenbuilder.css');
+  drupal_add_css(drupal_get_path('module', 'google_map_field') . '/css/google_map_field.css');
+  drupal_add_library('system', 'ui.dialog');
+  drupal_add_library('system', 'ui.draggable');
+
+  // Build the inline JS to build the map.
+  $settings = array(
+    'gmf_widget_form' => array(
+      'lat' => is_numeric($form['lat']['#value']) ? $form['lat']['#value'] : 51.51906840672028,
+      'lon' => is_numeric($form['lon']['#value']) ? $form['lon']['#value'] : -0.11661621093753638,
+      'zoom' => is_numeric($form['zoom']['#value']) ? $form['zoom']['#value'] : 9,
+      'fname' => $form['#fname'],
+    ),
+  );
+  drupal_add_js($settings, 'setting');
+
+  return $form;
 }
 
 /**

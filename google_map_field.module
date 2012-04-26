@@ -174,14 +174,14 @@ function google_map_field_field_widget_form(&$form, &$form_state, $field, $insta
   $element['lat'] = array(
     '#type' => 'textfield',
     '#title' => t('Latitude'),
-    '#required' => TRUE,
+    '#required' => $instance['required'],
     '#element_validate' => array('google_map_field_latlon_validate'),
     '#default_value' => isset($items[$delta]['lat']) ? $items[$delta]['lat'] : NULL,
   );
   $element['lon'] = array(
     '#type' => 'textfield',
     '#title' => t('Longitude'),
-    '#required' => TRUE,
+    '#required' => $instance['required'],
     '#element_validate' => array('google_map_field_latlon_validate'),
     '#default_value' => isset($items[$delta]['lon']) ? $items[$delta]['lon'] : NULL,
   );
@@ -205,7 +205,7 @@ function google_map_field_field_widget_form(&$form, &$form_state, $field, $insta
  *  Custom validation function for latitude/longitude fields.
  */
 function google_map_field_latlon_validate($element, $form, &$form_state) {
-  if (!is_numeric($element['#value'])) {
+  if (!is_numeric($element['#value']) && !empty($element['#value'])) {
     $field = implode('][', $element['#array_parents']);
     form_set_error($field, t('Invalid value - ') . $element['#title']);
   }

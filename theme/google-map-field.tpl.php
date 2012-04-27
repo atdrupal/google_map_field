@@ -2,7 +2,12 @@
 
 /**
  * @file
- * Template file to format the output of google map fields
+ * Default theme implementation for google map fields.
+ *
+ * Available variables:
+ * - $name: the display name of the map
+ * - $delta: a unique id for the map used by the associated javascript
+ *   to identify the map container.
  */
 
 ?>

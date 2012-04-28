@@ -46,13 +46,13 @@ function google_map_field_menu() {
 function google_map_field_field_info() {
   return array(
     'google_map_field' => array(
-      'label' => 'Google Map Field',
+      'label' => t('Google Map Field'),
       'description' => t('This field stores and renders Google Maps.'),
       'instance_settings' => array(
         'cardinality' => 1,
       ),
       'default_widget' => 'google_map_field_widget',
-      'default_formatter' => 'google_map_field_default',
+      'default_formatter' => 'google_map_field_formatter_default',
     ),
   );
 }
@@ -74,7 +74,7 @@ function google_map_field_field_widget_info() {
  */
 function google_map_field_field_formatter_info() {
   $formats = array(
-    'google_map_field_default' => array(
+    'google_map_field_formatter_default' => array(
       'label' => t('Map'),
       'description' => t('Default display for Google map field.'),
       'field types' => array('google_map_field'),

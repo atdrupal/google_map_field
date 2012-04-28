@@ -31,7 +31,7 @@ function google_map_field_menu() {
   $items = array();
 
   $items['google-map-field/token-builder'] = array(
-    'access callback' => array('access administration pages'),
+    'access arguments' => array('access content'),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('google_map_field_tokenbuilder_form'),
     'type' => MENU_CALLBACK,
@@ -91,7 +91,7 @@ function google_map_field_field_widget_error($element, $error, $form, &$form_sta
 }
 
 /**
- * Implements hook_content_is_empty().
+ * Implements hook_field_is_empty().
  */
 function google_map_field_field_is_empty($item, $field) {
   if (empty($item['lat']) || empty($item['lon'])) {
@@ -210,7 +210,7 @@ function google_map_field_field_widget_form(&$form, &$form_state, $field, $insta
 function google_map_field_latlon_validate($element, $form, &$form_state) {
   if (!is_numeric($element['#value']) && !empty($element['#value'])) {
     $field = implode('][', $element['#array_parents']);
-    form_set_error($field, t('Invalid value - :title', array(':title' => $element['#title'])));
+    form_set_error($field, t('Invalid value - @title', array('@title' => $element['#title'])));
   }
 }
 

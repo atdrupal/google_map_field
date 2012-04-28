@@ -1,4 +1,9 @@
 
+/**
+ * @file
+ * This file contains the necessary javascript to handle the WYSIWYG map token builder plugin.
+ */
+
 (function ($) {
 
   Drupal.wysiwyg.plugins['gmf_tokenbuilder'] = {
@@ -61,7 +66,7 @@
           close: dialogClose
         });
         dialogdiv.dialog("open");
-        getMap();
+        google_map_field_getMap();
       });
     },
 

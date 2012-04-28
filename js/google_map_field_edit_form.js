@@ -8,13 +8,13 @@
 /**
  * Declare global variable by which to identify the map for the token builder.
  */
-var mapTokenBuilder;
+var google_map_field_mapTokenBuilder;
 
 /**
  * This function is called by the WYSIWYG plugin code when the map builder
  * overlay is opened.
  */
-function getMap() {
+function google_map_field_getMap() {
   // Set default coords for the map centre and marker.
   var latlng = new google.maps.LatLng(51.0, 0.12);
   var mapOptions = {
@@ -24,19 +24,19 @@ function getMap() {
     mapTypeId: google.maps.MapTypeId.ROADMAP
   };
   // Create and attached the map.
-  mapTokenBuilder = new google.maps.Map(document.getElementById("google_map_field_selector"), mapOptions);
+  google_map_field_mapTokenBuilder = new google.maps.Map(document.getElementById("google_map_field_selector"), mapOptions);
   // Create the marker and drop it on the map.
   marker = new google.maps.Marker({
     position: latlng,
-    map: mapTokenBuilder,
+    map: google_map_field_mapTokenBuilder,
   });
   // Add a click listener to the map.
-  google.maps.event.addListener(mapTokenBuilder, "click", function(event) {
+  google.maps.event.addListener(google_map_field_mapTokenBuilder, "click", function(event) {
     setMarker(event.latLng)
     buildToken();
   });
   // Add an event listener to the map to catch zoom in/zoom out.
-  google.maps.event.addListener(mapTokenBuilder, "zoom_changed", function(event) {
+  google.maps.event.addListener(google_map_field_mapTokenBuilder, "zoom_changed", function(event) {
     buildToken();
   });
 };
@@ -48,8 +48,8 @@ function getMap() {
  */
 function buildToken() {
   var $ = jQuery.noConflict();
-  $("#edit-zoom").val(mapTokenBuilder.getZoom());
-  $("#edit-token").val("lat=" + marker.getPosition().lat() + ",lon=" + marker.getPosition().lng() + ",width=" + $("#edit-width").val() + ",height=" + $("#edit-height").val() + ",zoom=" + mapTokenBuilder.getZoom());
+  $("#edit-zoom").val(google_map_field_mapTokenBuilder.getZoom());
+  $("#edit-token").val("lat=" + marker.getPosition().lat() + ",lon=" + marker.getPosition().lng() + ",width=" + $("#edit-width").val() + ",height=" + $("#edit-height").val() + ",zoom=" + google_map_field_mapTokenBuilder.getZoom());
   return false;
 }
 
@@ -59,5 +59,5 @@ function buildToken() {
  */
 function setMarker(latLng) {
   marker.setPosition(latLng);
-  mapTokenBuilder.setCenter(latLng);
+  google_map_field_mapTokenBuilder.setCenter(latLng);
 }

@@ -8,7 +8,7 @@
 /**
  * Declare global variable by which to identify the map.
  */
-var map;
+var google_map_field_map;
 
 /**
  * Add code to generate the map on page load.
@@ -29,11 +29,11 @@ var map;
         mapTypeId: google.maps.MapTypeId.ROADMAP
       };
       // create the map.
-      map = new google.maps.Map(document.getElementById("google_map_field_0"), mapOptions);
+      google_map_field_map = new google.maps.Map(document.getElementById("google_map_field_0"), mapOptions);
       // Drop a marker at the specified position.
       marker = new google.maps.Marker({
         position: latlng,
-        map: map,
+        map: google_map_field_map,
       });
     }
   };

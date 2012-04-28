@@ -8,7 +8,7 @@
 /**
  * Declare global variable by which to identify the map.
  */
-var map;
+var google_map_field_map;
 
 /**
  * Add code to generate the map on page load.
@@ -29,17 +29,17 @@ var map;
         streetViewControl: false,
         mapTypeId: google.maps.MapTypeId.ROADMAP
       };
-      map = new google.maps.Map(document.getElementById("google_map_picker"), mapOptions);
+      google_map_field_map = new google.maps.Map(document.getElementById("google_map_picker"), mapOptions);
       marker = new google.maps.Marker({
         position: latlng,
-        map: map,
+        map: google_map_field_map,
       });
       // Add a click listener to the map.
-      google.maps.event.addListener(map, "click", function(event) {
+      google.maps.event.addListener(google_map_field_map, "click", function(event) {
         getCoords(event.latLng);
       });
       // Add an event function to catch zoom in/zoom out.
-      google.maps.event.addListener(map, "zoom_changed", function(event) {
+      google.maps.event.addListener(google_map_field_map, "zoom_changed", function(event) {
         document.getElementById("edit-"+fname+"-und-0-zoom").value = map.getZoom();
       });
     }
@@ -54,7 +54,7 @@ var map;
 function getCoords(latlng) {
   var fname = Drupal.settings.gmf_widget_form['fname'];
   marker.setPosition(latlng);
-  map.setCenter(latlng);
+  google_map_field_map.setCenter(latlng);
   document.getElementById("edit-"+fname+"-und-0-lat").value = latlng.lat();
   document.getElementById("edit-"+fname+"-und-0-lon").value = latlng.lng();
 }

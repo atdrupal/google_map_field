@@ -25,6 +25,19 @@ function google_map_field_help($path, $arg) {
 }
 
 /**
+ * Implements hook_init().
+ */
+function google_map_field_init() {
+  if (module_exists('wysiwyg')) {
+    drupal_add_js('http://maps.googleapis.com/maps/api/js?sensor=false', 'external');
+    drupal_add_js(drupal_get_path('module', 'google_map_field') . '/js/google_map_field_edit_form.js', 'file');
+    drupal_add_css(drupal_get_path('module', 'google_map_field') . '/wysiwyg_plugins/gmf_tokenbuilder/css/gmf_tokenbuilder.css');
+    drupal_add_library('system', 'ui.dialog');
+    drupal_add_library('system', 'ui.draggable');
+  }
+}
+
+/**
  * Implements hook_menu().
  */
 function google_map_field_menu() {

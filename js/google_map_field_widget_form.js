@@ -40,7 +40,7 @@ var google_map_field_map;
       });
       // Add an event function to catch zoom in/zoom out.
       google.maps.event.addListener(google_map_field_map, "zoom_changed", function(event) {
-        document.getElementById("edit-"+fname+"-und-0-zoom").value = map.getZoom();
+        document.getElementById("edit-"+fname+"-und-0-zoom").value = google_map_field_map.getZoom();
       });
     }
   };

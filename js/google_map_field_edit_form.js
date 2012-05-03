@@ -14,11 +14,16 @@ var google_map_field_mapTokenBuilder;
  * This function is called by the WYSIWYG plugin code when the map builder
  * overlay is opened.
  */
-function google_map_field_getMap() {
+function google_map_field_getMap(lat, lon, zoomAmnt) {
   // Set default coords for the map centre and marker.
-  var latlng = new google.maps.LatLng(51.0, 0.12);
+  if (lat == null && lon == null && zoomAmnt == null) {
+    var latlng = new google.maps.LatLng(51.0, 0.12);
+    zoomAmnt = 9;
+  } else {
+    var latlng = new google.maps.LatLng(lat, lon);
+  }
   var mapOptions = {
-    zoom: 9,
+    zoom: zoomAmnt,
     center: latlng,
     streetViewControl: false,
     mapTypeId: google.maps.MapTypeId.ROADMAP
@@ -32,12 +37,12 @@ function google_map_field_getMap() {
   });
   // Add a click listener to the map.
   google.maps.event.addListener(google_map_field_mapTokenBuilder, "click", function(event) {
-    setMarker(event.latLng)
-    buildToken();
+    google_map_field_setMarker(event.latLng)
+    google_map_field_buildToken();
   });
   // Add an event listener to the map to catch zoom in/zoom out.
   google.maps.event.addListener(google_map_field_mapTokenBuilder, "zoom_changed", function(event) {
-    buildToken();
+    google_map_field_buildToken();
   });
 };
 
@@ -46,7 +51,7 @@ function google_map_field_getMap() {
  * drop a marker. It takes the necessary values (lat/long/width/height and
  * zoom) and builds a token from them which is placed in the token field.
  */
-function buildToken() {
+function google_map_field_buildToken() {
   var $ = jQuery.noConflict();
   $("#edit-zoom").val(google_map_field_mapTokenBuilder.getZoom());
   $("#edit-token").val("lat=" + marker.getPosition().lat() + ",lon=" + marker.getPosition().lng() + ",width=" + $("#edit-width").val() + ",height=" + $("#edit-height").val() + ",zoom=" + google_map_field_mapTokenBuilder.getZoom());
@@ -57,7 +62,7 @@ function buildToken() {
  * This function takes the lat/long values passed in and centres the map
  * at that point and also drops a marker at that point.
  */
-function setMarker(latLng) {
+function google_map_field_setMarker(latLng) {
   marker.setPosition(latLng);
   google_map_field_mapTokenBuilder.setCenter(latLng);
 }

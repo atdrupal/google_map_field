@@ -29,7 +29,7 @@ function google_map_field_help($path, $arg) {
  */
 function google_map_field_init() {
   if (module_exists('wysiwyg')) {
-    drupal_add_js('http://maps.googleapis.com/maps/api/js?sensor=false', 'external');
+    _add_maps_api();
     drupal_add_js(drupal_get_path('module', 'google_map_field') . '/js/google_map_field_edit_form.js', 'file');
     drupal_add_css(drupal_get_path('module', 'google_map_field') . '/wysiwyg_plugins/gmf_tokenbuilder/css/gmf_tokenbuilder.css');
     drupal_add_library('system', 'ui.dialog');
@@ -42,6 +42,15 @@ function google_map_field_init() {
  */
 function google_map_field_menu() {
   $items = array();
+
+  $items['admin/config/google-map-field-apikey'] = array(
+    'title' => 'Google Map Field API Key',
+    'description' => 'Set your Google Maps API key.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('google_map_field_apikey_settings_form'),
+    'file' => 'includes/google_map_field.admin.inc',
+    'access arguments' => array('access administration pages'),
+  );
 
   $items['google-map-field/token-builder'] = array(
     'access arguments' => array('access content'),
@@ -118,7 +127,7 @@ function google_map_field_field_is_empty($item, $field) {
  */
 function google_map_field_field_formatter_view($object_type, $object, $field, $instance, $langcode, $items, $display) {
   drupal_add_css(drupal_get_path('module', 'google_map_field') . '/css/google_map_field.css');
-  drupal_add_js('http://maps.googleapis.com/maps/api/js?sensor=false', 'external');
+  _add_maps_api();
   $element = array();
   foreach ($items as $delta => $item) {
     $element[$delta] = google_map_field_format_field($item, $delta);
@@ -206,6 +215,16 @@ function google_map_field_field_widget_form(&$form, &$form_state, $field, $insta
     '#title' => t('Zoom'),
     '#default_value' => isset($items[$delta]['zoom']) ? $items[$delta]['zoom'] : 9,
     '#attributes' => array('readonly' => 'readonly'),
+  );
+  $element['center_on'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Center On'),
+    '#description' => t('To center the map on an approximate location, enter the location in the box above, e.g. "London, UK" or "1 Southwark Street, London, UK" and click \'center\''),
+  );
+  $element['do_center'] = array(
+    '#type' => 'button',
+    '#value' => t('center'),
+    '#attributes' => array('onclick' => 'return google_map_field_doCenter();'),
     '#suffix' => '</div>',
   );
   $element['map'] = array(
@@ -250,7 +269,7 @@ function google_map_field_filter_process($text, $filter, $format) {
   $i = 0;
   $delta = 1000;
 
-  drupal_add_js('http://maps.googleapis.com/maps/api/js?sensor=false', 'external');
+  _add_maps_api();
   $maps = array();
   while (isset($matches[1][$i])) {
     $match = str_replace(']', '', str_replace('[', '', $matches[1][$i]));
@@ -300,7 +319,7 @@ function google_map_field_wysiwyg_include_directory($type) {
  *  Function to add necessary JS and CSS after form has built.
  */
 function google_map_field_after_build($form, &$form_state) {
-  drupal_add_js('http://maps.googleapis.com/maps/api/js?sensor=false', 'external');
+  _add_maps_api();
   drupal_add_js(drupal_get_path('module', 'google_map_field') . '/js/google_map_field_edit_form.js', 'file');
   drupal_add_js(drupal_get_path('module', 'google_map_field') . '/js/google_map_field_widget_form.js', 'file');
   drupal_add_css(drupal_get_path('module', 'google_map_field') . '/wysiwyg_plugins/gmf_tokenbuilder/css/gmf_tokenbuilder.css');
@@ -357,11 +376,26 @@ function google_map_field_tokenbuilder_form($form, &$form_state) {
     '#attributes' => array('readonly' => 'readonly'),
     '#suffix' => '</div></div>',
   );
+//  $form['token_builder']['token'] = array(
+//    '#type' => 'textfield',
+//    '#title' => t('Your Google Map Field Token'),
+//    '#default_value' => 'lat=51.0,lon=0.12,width=300,height=250,zoom=9',
+//    '#attributes' => array('readonly' => 'readonly'),
+//  );
   $form['token_builder']['token'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Your Google Map Field Token'),
+    '#type' => 'hidden',
+    '#attributes' => array('id' => 'edit-token'),
     '#default_value' => 'lat=51.0,lon=0.12,width=300,height=250,zoom=9',
-    '#attributes' => array('readonly' => 'readonly'),
+  );
+  $form['token_builder']['center_on'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Center On'),
+    '#description' => t('To center the map on an approximate location, enter the location in the box above, e.g. "London, UK" or "1 Southwark Street, London, UK" and click \'center\''),
+  );
+  $form['token_builder']['do_center'] = array(
+    '#type' => 'button',
+    '#value' => t('center'),
+    '#attributes' => array('onclick' => 'return google_map_field_doCenterPopup();'),
   );
 
   return $form;
@@ -434,4 +468,15 @@ function theme_google_map_field_map_token($variables) {
   return '
     <div id="inline_google_map_field_' . $variables['delta'] . '" class="inline-google-map-field" style="width: ' . $variables['width'] . 'px; height: ' . $variables['height'] . 'px;"></div>
   ';
+}
+
+/**
+ *
+ */
+function _add_maps_api() {
+  if (variable_get('google_map_field_apikey', '') != '') {
+    drupal_add_js('http://maps.googleapis.com/maps/api/js?sensor=false&key=' . variable_get('google_map_field_apikey', ''), 'external');
+  } else {
+    drupal_add_js('http://maps.googleapis.com/maps/api/js?sensor=false', 'external');
+  }
 }

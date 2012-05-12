@@ -66,3 +66,27 @@ function google_map_field_setMarker(latLng) {
   marker.setPosition(latLng);
   google_map_field_mapTokenBuilder.setCenter(latLng);
 }
+
+/**
+ * This function takes the value in the center on field and centers the map
+ * at that point.
+ */
+function google_map_field_doCenterPopup() {
+  var geocoder = new google.maps.Geocoder();
+  var location = document.getElementById("edit-center-on").value;
+  geocoder.geocode( { 'address': location}, function (result, status) {
+    if (status == 'OK') {
+      var latlng = new google.maps.LatLng(result[0].geometry.location.lat(), result[0].geometry.location.lng());
+      google_map_field_mapTokenBuilder.panTo(latlng);
+      marker = new google.maps.Marker({
+        position: latlng,
+        map: google_map_field_mapTokenBuilder,
+      });
+      google_map_field_buildToken();
+    } else {
+      alert('Could not find location.');
+    }
+    return false;
+  });
+  return false;
+}

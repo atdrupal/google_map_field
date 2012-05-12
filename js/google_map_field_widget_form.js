@@ -58,3 +58,26 @@ function getCoords(latlng) {
   document.getElementById("edit-"+fname+"-und-0-lat").value = latlng.lat();
   document.getElementById("edit-"+fname+"-und-0-lon").value = latlng.lng();
 }
+
+/**
+ * This function takes the value in the center on field and centers the map
+ * at that point.
+ */
+function google_map_field_doCenter() {
+  var geocoder = new google.maps.Geocoder();
+  var location = document.getElementById("edit-field-location-map-und-0-center-on").value;
+  geocoder.geocode( { 'address': location}, function (result, status) {
+    if (status == 'OK') {
+      var latlng = new google.maps.LatLng(result[0].geometry.location.lat(), result[0].geometry.location.lng());
+      google_map_field_map.panTo(latlng);
+      marker = new google.maps.Marker({
+        position: latlng,
+        map: google_map_field_map,
+      });
+    } else {
+      alert('Could not find location.');
+    }
+    return false;
+  });
+  return false;
+}

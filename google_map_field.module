@@ -475,7 +475,11 @@ function theme_google_map_field_map_token($variables) {
  */
 function _add_maps_api() {
   if (variable_get('google_map_field_apikey', '') != '') {
-    drupal_add_js('http://maps.googleapis.com/maps/api/js?sensor=false&key=' . variable_get('google_map_field_apikey', ''), 'external');
+    $element = array(
+      '#type' => 'markup',
+      '#markup' => '<script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?sensor=false&key=' . variable_get('google_map_field_apikey', '') . '"></script>',
+    );
+    drupal_add_html_head($element, 'google_maps_api');
   } else {
     drupal_add_js('http://maps.googleapis.com/maps/api/js?sensor=false', 'external');
   }

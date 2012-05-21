@@ -28,8 +28,9 @@ function google_map_field_help($path, $arg) {
  * Implements hook_init().
  */
 function google_map_field_init() {
+  google_map_field_add_maps_api();
+  drupal_add_js(drupal_get_path('module', 'google_map_field') . '/js/google_map_field_node_display.js', 'file');
   if (module_exists('wysiwyg')) {
-    _add_maps_api();
     drupal_add_js(drupal_get_path('module', 'google_map_field') . '/js/google_map_field_edit_form.js', 'file');
     drupal_add_css(drupal_get_path('module', 'google_map_field') . '/wysiwyg_plugins/gmf_tokenbuilder/css/gmf_tokenbuilder.css');
     drupal_add_library('system', 'ui.dialog');
@@ -127,10 +128,9 @@ function google_map_field_field_is_empty($item, $field) {
  */
 function google_map_field_field_formatter_view($object_type, $object, $field, $instance, $langcode, $items, $display) {
   drupal_add_css(drupal_get_path('module', 'google_map_field') . '/css/google_map_field.css');
-  _add_maps_api();
   $element = array();
   foreach ($items as $delta => $item) {
-    $element[$delta] = google_map_field_format_field($item, $delta);
+    $element[$delta] = google_map_field_format_field($item, $delta, $display);
   }
   return $element;
 }
@@ -139,17 +139,19 @@ function google_map_field_field_formatter_view($object_type, $object, $field, $i
  * This function formats the google map field for display,
  * called by google_map_field_field_formatter_view().
  */
-function google_map_field_format_field($item, $delta) {
+function google_map_field_format_field($item, $delta, $display) {
+  $map_id = uniqid();
+
   // Get the map details and place in an array to pass to Drupal.settings.
   $settings = array(
     'gmf_node_display' => array(
-      'lat' => $item['lat'],
-      'lon' => $item['lon'],
-      'zoom' => $item['zoom'],
+      'google_map_field_' . $map_id => array(
+        'lat' => $item['lat'],
+        'lon' => $item['lon'],
+        'zoom' => $item['zoom'],
+      ),
     ),
   );
-  drupal_add_js(drupal_get_path('module', 'google_map_field') . '/js/google_map_field_node_display.js', 'file');
-  drupal_add_js($settings, 'setting');
 
   $element = array(
     '#type' => 'container',
@@ -162,11 +164,12 @@ function google_map_field_format_field($item, $delta) {
       'text' => array(
         '#markup' => theme('google_map_field', array(
           'name' => check_plain($item['name']),
-          'delta' => $delta,
+          'map_id' => $map_id,
         )),
       ),
     ),
   );
+  drupal_add_js($settings, 'setting');
   return $element;
 }
 
@@ -269,7 +272,7 @@ function google_map_field_filter_process($text, $filter, $format) {
   $i = 0;
   $delta = 1000;
 
-  _add_maps_api();
+  //google_map_field_add_maps_api();
   $maps = array();
   while (isset($matches[1][$i])) {
     $match = str_replace(']', '', str_replace('[', '', $matches[1][$i]));
@@ -319,7 +322,7 @@ function google_map_field_wysiwyg_include_directory($type) {
  *  Function to add necessary JS and CSS after form has built.
  */
 function google_map_field_after_build($form, &$form_state) {
-  _add_maps_api();
+  //google_map_field_add_maps_api();
   drupal_add_js(drupal_get_path('module', 'google_map_field') . '/js/google_map_field_edit_form.js', 'file');
   drupal_add_js(drupal_get_path('module', 'google_map_field') . '/js/google_map_field_widget_form.js', 'file');
   drupal_add_css(drupal_get_path('module', 'google_map_field') . '/wysiwyg_plugins/gmf_tokenbuilder/css/gmf_tokenbuilder.css');
@@ -376,12 +379,6 @@ function google_map_field_tokenbuilder_form($form, &$form_state) {
     '#attributes' => array('readonly' => 'readonly'),
     '#suffix' => '</div></div>',
   );
-//  $form['token_builder']['token'] = array(
-//    '#type' => 'textfield',
-//    '#title' => t('Your Google Map Field Token'),
-//    '#default_value' => 'lat=51.0,lon=0.12,width=300,height=250,zoom=9',
-//    '#attributes' => array('readonly' => 'readonly'),
-//  );
   $form['token_builder']['token'] = array(
     '#type' => 'hidden',
     '#attributes' => array('id' => 'edit-token'),
@@ -410,9 +407,7 @@ function google_map_field_theme($existing, $type, $theme, $path) {
       'google_map_field' => array(
         'variables' => array(
           'name' => NULL,
-          'delta' => NULL,
-          'width' => NULL,
-          'height' => NULL,
+          'map_id' => NULL,
         ),
         'template' => 'google-map-field',
         'path' => drupal_get_path('module', 'google_map_field') . '/theme',
@@ -462,7 +457,7 @@ function theme_google_map_field_map_picker($variables) {
 }
 
 /**
- *  Theme function to return map div for tokenised maps.
+ * Theme function to return map div for tokenised maps.
  */
 function theme_google_map_field_map_token($variables) {
   return '
@@ -471,9 +466,9 @@ function theme_google_map_field_map_token($variables) {
 }
 
 /**
- *
+ * Helper function to add the Google Maps API.
  */
-function _add_maps_api() {
+function google_map_field_add_maps_api() {
   if (variable_get('google_map_field_apikey', '') != '') {
     $element = array(
       '#type' => 'markup',

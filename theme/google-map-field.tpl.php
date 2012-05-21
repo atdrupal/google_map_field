@@ -6,7 +6,7 @@
  *
  * Available variables:
  * - $name: the display name of the map
- * - $delta: a unique id for the map used by the associated javascript
+ * - $map_id: a unique ID for the map.
  *   to identify the map container.
  */
 
@@ -15,5 +15,5 @@
   <div class="google-map-field-label">
     <?php print $name; ?>
   </div>
-  <div id="google_map_field_<?php print $delta; ?>" class="google_map_field_display"></div>
+  <div id="google_map_field_<?php print $map_id; ?>" class="google_map_field_display"></div>
 </div>

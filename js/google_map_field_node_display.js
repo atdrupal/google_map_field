@@ -49,6 +49,6 @@ function google_map_field_load_map(map_id) {
   // Drop a marker at the specified position.
   marker = new google.maps.Marker({
     position: latlng,
-    map: google_map_field_map,
+    map: google_map_field_map
   });
 }

@@ -32,7 +32,7 @@ var google_map_field_map;
       google_map_field_map = new google.maps.Map(document.getElementById("google_map_picker"), mapOptions);
       marker = new google.maps.Marker({
         position: latlng,
-        map: google_map_field_map,
+        map: google_map_field_map
       });
       // Add a click listener to the map.
       google.maps.event.addListener(google_map_field_map, "click", function(event) {
@@ -65,14 +65,15 @@ function getCoords(latlng) {
  */
 function google_map_field_doCenter() {
   var geocoder = new google.maps.Geocoder();
-  var location = document.getElementById("edit-field-location-map-und-0-center-on").value;
+  var fname = Drupal.settings.gmf_widget_form['fname'];
+  var location = document.getElementById("edit-"+fname+"-und-0-center-on").value;
   geocoder.geocode( { 'address': location}, function (result, status) {
     if (status == 'OK') {
       var latlng = new google.maps.LatLng(result[0].geometry.location.lat(), result[0].geometry.location.lng());
       google_map_field_map.panTo(latlng);
       marker = new google.maps.Marker({
         position: latlng,
-        map: google_map_field_map,
+        map: google_map_field_map
       });
     } else {
       alert('Could not find location.');

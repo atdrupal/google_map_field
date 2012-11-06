@@ -34,6 +34,15 @@
      * with map pin images.
      */
     attach: function (content, settings, instanceId) {
+      var matches = content.match(/lat.*?\;/g);
+      if (matches) {
+        for (i = 0; i < matches.length; i++) {
+          var inlineTag = matches[i];
+          var toInsert = this._getPlaceholder(settings, inlineTag);
+          content = content.replace(inlineTag, toInsert);
+        }
+      }
+      // find any old styles tokens
       var matches = content.match(/\[gmf\:.*?\]/g);
       if (matches) {
         for (i = 0; i < matches.length; i++) {
@@ -98,7 +107,8 @@
             return false;
           }
           var editor_id = instanceId;
-          token = ' [gmf:' + token + '] ';
+          //token = 'gmf:' + token + ':gmf';
+          token = token+';';
           Drupal.wysiwyg.plugins.gmf_tokenbuilder.insertIntoEditor(settings, token, editor_id);
           jQuery(this).dialog("close");
         };
@@ -132,15 +142,16 @@
     },
 
     insertIntoEditor: function (settings, token, editor_id) {
-      token = '<img class="google-map-field-tokenbuilder-pin" src="'+settings.path+'/images/gmftb.toolbar_icon.png" alt="'+token+'" title="Google Map">';
-      Drupal.wysiwyg.instances[editor_id].insert(token);
+      tag = "<img class='google-map-field-tokenbuilder-pin' src='"+settings.path+"/images/gmftb.toolbar_icon.png' alt='"+token+"' title='Google Map'/>";
+      console.log(tag);
+      Drupal.wysiwyg.instances[editor_id].insert(tag);
     },
 
     /**
      * Helper function to return a HTML placeholder.
      */
     _getPlaceholder: function (settings, token) {
-      return '<img class="google-map-field-tokenbuilder-pin" src="'+settings.path+'/images/gmftb.toolbar_icon.png" alt="'+token+'" title="Google Map">';
+      return "<img class='google-map-field-tokenbuilder-pin' src='"+settings.path+"/images/gmftb.toolbar_icon.png' alt='"+token+"' title='Google Map'/>";
     },
 
     /**
@@ -150,6 +161,7 @@
       var mapSettings = {};
       var token = $(data).attr('alt');
       token = token.replace('[gmf:', '').replace(']', '');
+      token = token.replace(';', '');
       var nvPairs = token.split(',');
       for (var i = 0; i < nvPairs.length; i++) {
         var tmp = nvPairs[i].split('=');

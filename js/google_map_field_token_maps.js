@@ -23,7 +23,7 @@
         // Add the marker to the map.
         marker = new google.maps.Marker({
           position: latlng,
-          map: map[i],
+          map: map[i]
         });
       }
     }

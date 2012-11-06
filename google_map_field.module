@@ -102,6 +102,11 @@ function google_map_field_field_formatter_info() {
       'description' => t('Default display for Google map field.'),
       'field types' => array('google_map_field'),
     ),
+    'google_map_field_formatter_wkt' => array(
+      'label' => t('WKT'),
+      'description' => t('Use WKT format to display the google maps point info'),
+      'field types' => array('google_map_field'),
+    ),
   );
   return $formats;
 }
@@ -129,9 +134,20 @@ function google_map_field_field_is_empty($item, $field) {
 function google_map_field_field_formatter_view($object_type, $object, $field, $instance, $langcode, $items, $display) {
   drupal_add_css(drupal_get_path('module', 'google_map_field') . '/css/google_map_field.css');
   $element = array();
-  foreach ($items as $delta => $item) {
-    $element[$delta] = google_map_field_format_field($item, $delta, $display);
+
+  switch ($display['type']) {
+    case 'google_map_field_formatter_wkt':
+      foreach ($items as $delta => $item) {
+        $element[$delta] = array('#markup' => 'POINT(' . $item['lon'] . ' ' . $item['lat'] . ')');
+      }
+      break;
+    case 'google_map_field_formatter_default':
+      foreach ($items as $delta => $item) {
+        $element[$delta] = google_map_field_format_field($item, $delta, $display);
+      }
+      break;
   }
+
   return $element;
 }
 
@@ -270,12 +286,20 @@ function google_map_field_filter_process($text, $filter, $format) {
   $matches = array();
   preg_match_all('/\[gmf\:([^\]]*)\]/', $text, $matches);
   $i = 0;
+  while (isset($matches[0][$i])) {
+    $old = '/' . str_replace(']', '\]', str_replace('[', '\[', $matches[0][$i])) . '/';
+    $new = $matches[1][$i] . ';';
+    $out = preg_replace($old, $new, $out, 1);
+    $i++;
+  }
+  preg_match_all('/lat([^\]]*)\;/', $out, $matches);
+  $i = 0;
   $delta = 1000;
 
   //google_map_field_add_maps_api();
   $maps = array();
   while (isset($matches[1][$i])) {
-    $match = str_replace(']', '', str_replace('[', '', $matches[1][$i]));
+    $match = str_replace(';', '', $matches[0][$i]);
     $settings = explode(',', $match);
     $map_settings = array();
     foreach ($settings as $setting) {
@@ -287,14 +311,15 @@ function google_map_field_filter_process($text, $filter, $format) {
       }
     }
     $maps[$i] = $map_settings;
-    $replace = str_replace(']', '\]/', str_replace('[', '/\\[', $matches[0][$i]));
+    //$replace = str_replace(']', '\]/', str_replace('[', '/\\[', $matches[0][$i]));
+    $replace = $matches[0][$i];
     $settings = array(
       'delta' => $delta,
       'width' => $map_settings['width'],
       'height' => $map_settings['height'],
     );
     $replacement = theme('google_map_field_map_token', $settings);
-    $out = preg_replace($replace, $replacement, $out, 1);
+    $out = preg_replace('/' . $matches[0][$i] . '/', $replacement, $out, 1);
     $delta++;
     $i++;
   }

@@ -33,7 +33,7 @@ function google_map_field_getMap(lat, lon, zoomAmnt) {
   // Create the marker and drop it on the map.
   marker = new google.maps.Marker({
     position: latlng,
-    map: google_map_field_mapTokenBuilder,
+    map: google_map_field_mapTokenBuilder
   });
   // Add a click listener to the map.
   google.maps.event.addListener(google_map_field_mapTokenBuilder, "click", function(event) {
@@ -80,7 +80,7 @@ function google_map_field_doCenterPopup() {
       google_map_field_mapTokenBuilder.panTo(latlng);
       marker = new google.maps.Marker({
         position: latlng,
-        map: google_map_field_mapTokenBuilder,
+        map: google_map_field_mapTokenBuilder
       });
       google_map_field_buildToken();
     } else {

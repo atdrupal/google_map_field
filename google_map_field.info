@@ -2,3 +2,4 @@ name = Google Map Field
 description = Defines a Google map field.
 core = 7.x
 package = Fields
+dependecies[] = field

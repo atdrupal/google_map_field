@@ -4,20 +4,20 @@
   margin-top: 5px;
 }
 
-.google_map_field_left30pc {
+.google_map_field_left40pc {
   float: left;
-  width: 30%;
+  width: 40%;
 }
 
-.google_map_field_left65pc {
+.google_map_field_left60pc {
   float: left;
   margin-top: 27px;
-  width: 65%;
+  width: 60%;
 }
 
 #google_map_picker {
   height: 350px;
-  width: 600px;
+  width: 100%;
 }
 
 .google_map_field_display {

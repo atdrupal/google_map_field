@@ -14,12 +14,7 @@ function google_map_field_help($path, $arg) {
   $output = '';
   switch ($path) {
     case 'admin/help#google_map_field':
-      $output = t('Add Google Map type fields to content types, or enable an inline map token generator.');
-      if (module_exists('wysiwyg')) {
-        $url = l(t('Goto WYSIWYG profiles list'), 'admin/config/content/wysiwyg');
-        $text = t('Edit your WYSIWYG profiles to enable the Google Map Field Token Genertor (under buttons and plugins).');
-        $output .= '<p>' . $text . '</p><p>' . $url . '</p>';
-      }
+      $output = t('Add Google Map type fields to content types.');
   }
   return $output;
 }
@@ -28,14 +23,7 @@ function google_map_field_help($path, $arg) {
  * Implements hook_init().
  */
 function google_map_field_init() {
-  google_map_field_add_maps_api();
   drupal_add_js(drupal_get_path('module', 'google_map_field') . '/js/google_map_field_node_display.js', 'file');
-  if (module_exists('wysiwyg')) {
-    drupal_add_js(drupal_get_path('module', 'google_map_field') . '/js/google_map_field_edit_form.js', 'file');
-    drupal_add_css(drupal_get_path('module', 'google_map_field') . '/wysiwyg_plugins/gmf_tokenbuilder/css/gmf_tokenbuilder.css');
-    drupal_add_library('system', 'ui.dialog');
-    drupal_add_library('system', 'ui.draggable');
-  }
 }
 
 /**
@@ -51,13 +39,6 @@ function google_map_field_menu() {
     'page arguments' => array('google_map_field_apikey_settings_form'),
     'file' => 'includes/google_map_field.admin.inc',
     'access arguments' => array('access administration pages'),
-  );
-
-  $items['google-map-field/token-builder'] = array(
-    'access arguments' => array('access content'),
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('google_map_field_tokenbuilder_form'),
-    'type' => MENU_CALLBACK,
   );
 
   return $items;
@@ -135,6 +116,9 @@ function google_map_field_field_formatter_view($object_type, $object, $field, $i
   drupal_add_css(drupal_get_path('module', 'google_map_field') . '/css/google_map_field.css');
   $element = array();
 
+	// include the google maps api.
+	google_map_field_add_maps_api();
+
   switch ($display['type']) {
     case 'google_map_field_formatter_wkt':
       foreach ($items as $delta => $item) {
@@ -193,6 +177,10 @@ function google_map_field_format_field($item, $delta, $display) {
  * Implements hook_field_widget_form().
  */
 function google_map_field_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
+
+	// include the google maps api.
+	google_map_field_add_maps_api();
+
   $fname = str_replace('_', '-', $element['#field_name']);
   $element['#title'] = t('Google Map Field Settings');
   $element['#description'] = '<p>' . t('To set a location for the map, use the controls to zoom in or out and drag the map to find the correct area. Once you have found the correct location click that point to set the map.') . '</p>';
@@ -213,7 +201,7 @@ function google_map_field_field_widget_form(&$form, &$form_state, $field, $insta
     '#type' => 'textfield',
     '#title' => t('Map Name'),
     '#default_value' => isset($items[$delta]['name']) ? $items[$delta]['name'] : NULL,
-    '#prefix' => '<div class="clearfix"><div class="google_map_field_left30pc">',
+    '#prefix' => '<div><div class="clearfix"><div class="google_map_field_left40pc">',
   );
   $element['lat'] = array(
     '#type' => 'textfield',
@@ -248,15 +236,15 @@ function google_map_field_field_widget_form(&$form, &$form_state, $field, $insta
   );
   $element['map'] = array(
     '#markup' => theme('google_map_field_map_picker'),
-    '#prefix' => '<div class="google_map_field_left65pc">',
-    '#suffix' => '</div></div>',
+    '#prefix' => '<div class="google_map_field_left60pc">',
+    '#suffix' => '</div></div></div>',
   );
 
   return $element;
 }
 
 /**
- *  Custom validation function for latitude/longitude fields.
+ * Custom validation function for latitude/longitude fields.
  */
 function google_map_field_latlon_validate($element, $form, &$form_state) {
   if (!is_numeric($element['#value']) && !empty($element['#value'])) {
@@ -264,96 +252,13 @@ function google_map_field_latlon_validate($element, $form, &$form_state) {
     form_set_error($field, t('Invalid value - @title', array('@title' => $element['#title'])));
   }
 }
-
 /**
- * Implements hook_filter_info().
- */
-function google_map_field_filter_info() {
-  $filters['google_map_field_token'] = array(
-    'title' => t('Google Map Field'),
-    'description' => t('Use tokens to insert Google Map Fields.'),
-    'process callback' => 'google_map_field_filter_process',
-    'cache' => FALSE,
-  );
-  return $filters;
-}
-
-/**
- *  Process callback for hook_filter_info().
- */
-function google_map_field_filter_process($text, $filter, $format) {
-  $out = $text;
-  $matches = array();
-  preg_match_all('/\[gmf\:([^\]]*)\]/', $text, $matches);
-  $i = 0;
-  while (isset($matches[0][$i])) {
-    $old = '/' . str_replace(']', '\]', str_replace('[', '\[', $matches[0][$i])) . '/';
-    $new = $matches[1][$i] . ';';
-    $out = preg_replace($old, $new, $out, 1);
-    $i++;
-  }
-  preg_match_all('/lat([^\]]*)\;/', $out, $matches);
-  $i = 0;
-  $delta = 1000;
-
-  //google_map_field_add_maps_api();
-  $maps = array();
-  while (isset($matches[1][$i])) {
-    $match = str_replace(';', '', $matches[0][$i]);
-    $settings = explode(',', $match);
-    $map_settings = array();
-    foreach ($settings as $setting) {
-      $offset = strpos($setting, '=');
-      if ($offset !== FALSE) {
-        $key = trim(substr($setting, 0, $offset));
-        $val = trim(substr($setting, $offset + 1));
-        $map_settings[$key] = $val;
-      }
-    }
-    $maps[$i] = $map_settings;
-    //$replace = str_replace(']', '\]/', str_replace('[', '/\\[', $matches[0][$i]));
-    $replace = $matches[0][$i];
-    $settings = array(
-      'delta' => $delta,
-      'width' => $map_settings['width'],
-      'height' => $map_settings['height'],
-    );
-    $replacement = theme('google_map_field_map_token', $settings);
-    $out = preg_replace('/' . $matches[0][$i] . '/', $replacement, $out, 1);
-    $delta++;
-    $i++;
-  }
-  $map_collection = array(
-    'gmf_token_maps' => $maps,
-  );
-  drupal_add_js(drupal_get_path('module', 'google_map_field') . '/js/google_map_field_token_maps.js');
-  drupal_add_js($map_collection, 'setting');
-
-  return $out;
-}
-
-/**
- * Implements hook_wysiwyg_include_directory().
- */
-function google_map_field_wysiwyg_include_directory($type) {
-  switch ($type) {
-    case 'plugins':
-      return 'wysiwyg_plugins';
-      break;
-  }
-}
-
-/**
- *  Function to add necessary JS and CSS after form has built.
+ * Function to add necessary JS and CSS after form has built.
  */
 function google_map_field_after_build($form, &$form_state) {
-  //google_map_field_add_maps_api();
   drupal_add_js(drupal_get_path('module', 'google_map_field') . '/js/google_map_field_edit_form.js', 'file');
   drupal_add_js(drupal_get_path('module', 'google_map_field') . '/js/google_map_field_widget_form.js', 'file');
-  drupal_add_css(drupal_get_path('module', 'google_map_field') . '/wysiwyg_plugins/gmf_tokenbuilder/css/gmf_tokenbuilder.css');
   drupal_add_css(drupal_get_path('module', 'google_map_field') . '/css/google_map_field.css');
-  drupal_add_library('system', 'ui.dialog');
-  drupal_add_library('system', 'ui.draggable');
 
   // Build the inline JS to build the map.
   $settings = array(
@@ -365,60 +270,6 @@ function google_map_field_after_build($form, &$form_state) {
     ),
   );
   drupal_add_js($settings, 'setting');
-
-  return $form;
-}
-
-/**
- *  Form builder for the google map field token builder.
- */
-function google_map_field_tokenbuilder_form($form, &$form_state) {
-  drupal_set_title(t('Google Map Field Token Builder'));
-
-  $form = array();
-  $form['token_builder']['map'] = array(
-    '#markup' => theme('google_map_field_map_selector'),
-    '#prefix' => '<div class="google-map-field-tokenbuilder clearfix"><div class="google-map-field-tokenbuilder-map">',
-    '#suffix' => '</div>',
-  );
-  $form['token_builder']['width'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Width'),
-    '#size' => 15,
-    '#default_value' => '300',
-    '#attributes' => array('onkeyup' => 'return buildToken();'),
-    '#prefix' => '<div class="google-map-field-tokenbuilder-fields">',
-  );
-  $form['token_builder']['height'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Height'),
-    '#size' => 15,
-    '#default_value' => '250',
-    '#attributes' => array('onkeyup' => 'return buildToken();'),
-  );
-  $form['token_builder']['zoom'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Zoom'),
-    '#size' => 15,
-    '#default_value' => '9',
-    '#attributes' => array('readonly' => 'readonly'),
-    '#suffix' => '</div></div>',
-  );
-  $form['token_builder']['token'] = array(
-    '#type' => 'hidden',
-    '#attributes' => array('id' => 'edit-token'),
-    '#default_value' => 'lat=51.0,lon=0.12,width=300,height=250,zoom=9',
-  );
-  $form['token_builder']['center_on'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Center On'),
-    '#description' => t('To center the map on an approximate location, enter the location in the box above, e.g. "London, UK" or "1 Southwark Street, London, UK" and click \'center\''),
-  );
-  $form['token_builder']['do_center'] = array(
-    '#type' => 'button',
-    '#value' => t('center'),
-    '#attributes' => array('onclick' => 'return google_map_field_doCenterPopup();'),
-  );
 
   return $form;
 }
@@ -437,19 +288,8 @@ function google_map_field_theme($existing, $type, $theme, $path) {
         'template' => 'google-map-field',
         'path' => drupal_get_path('module', 'google_map_field') . '/theme',
       ),
-      'google_map_field_map_selector' => array(
-        'render_element' => 'element',
-      ),
       'google_map_field_map_picker' => array(
         'render_element' => 'element',
-      ),
-      'google_map_field_map_token' => array(
-        'render_element' => 'element',
-        'variables' => array(
-          'delta' => NULL,
-          'width' => NULL,
-          'height' => NULL,
-        ),
       ),
     );
   }
@@ -468,26 +308,10 @@ function google_map_field_form_field_ui_field_edit_form_alter(&$form, &$form_sta
 }
 
 /**
- *  Theme function to return map selector div on token builder overlay.
- */
-function theme_google_map_field_map_selector($variables) {
-  return '<div id="google_map_field_selector"></div>';
-}
-
-/**
  *  Theme function to return map picker div on node edit form.
  */
 function theme_google_map_field_map_picker($variables) {
   return '<div id="google_map_picker"></div>';
-}
-
-/**
- * Theme function to return map div for tokenised maps.
- */
-function theme_google_map_field_map_token($variables) {
-  return '
-    <div id="inline_google_map_field_' . $variables['delta'] . '" class="inline-google-map-field" style="width: ' . $variables['width'] . 'px; height: ' . $variables['height'] . 'px;"></div>
-  ';
 }
 
 /**
@@ -503,4 +327,19 @@ function google_map_field_add_maps_api() {
   } else {
     drupal_add_js('http://maps.googleapis.com/maps/api/js?sensor=false', 'external');
   }
+}
+
+/**
+ * Helper function to return all fields created on the system
+ * of the google map field type.
+ */
+function google_map_field_get_fields() {
+  $types = array_keys(google_map_field_field_info());
+  $fields = array();
+  foreach (field_info_fields() as $field) {
+    if (in_array($field['type'], $types)) {
+      $fields[] = $field;
+    }
+  }
+  return $fields;
 }

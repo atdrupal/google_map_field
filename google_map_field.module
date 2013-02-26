@@ -256,7 +256,6 @@ function google_map_field_latlon_validate($element, $form, &$form_state) {
  * Function to add necessary JS and CSS after form has built.
  */
 function google_map_field_after_build($form, &$form_state) {
-  drupal_add_js(drupal_get_path('module', 'google_map_field') . '/js/google_map_field_edit_form.js', 'file');
   drupal_add_js(drupal_get_path('module', 'google_map_field') . '/js/google_map_field_widget_form.js', 'file');
   drupal_add_css(drupal_get_path('module', 'google_map_field') . '/css/google_map_field.css');
 

@@ -116,8 +116,8 @@ function google_map_field_field_formatter_view($object_type, $object, $field, $i
   drupal_add_css(drupal_get_path('module', 'google_map_field') . '/css/google_map_field.css');
   $element = array();
 
-	// include the google maps api.
-	google_map_field_add_maps_api();
+  // include the google maps api.
+  google_map_field_add_maps_api();
 
   switch ($display['type']) {
     case 'google_map_field_formatter_wkt':
@@ -178,8 +178,8 @@ function google_map_field_format_field($item, $delta, $display) {
  */
 function google_map_field_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
 
-	// include the google maps api.
-	google_map_field_add_maps_api();
+  // include the google maps api.
+  google_map_field_add_maps_api();
 
   $fname = str_replace('_', '-', $element['#field_name']);
   $element['#title'] = t('Google Map Field Settings');
@@ -190,9 +190,17 @@ function google_map_field_field_widget_form(&$form, &$form_state, $field, $insta
     '#tree' => TRUE,
     '#collapsible' => TRUE,
     '#collapsed' => FALSE,
-    '#after_build' => array('google_map_field_after_build'),
+    '#attached' => array(
+      'js' => array(
+        drupal_get_path('module', 'google_map_field') . '/js/google_map_field_widget_form.js',
+      ),
+      'css' => array(
+        drupal_get_path('module', 'google_map_field') . '/css/google_map_field.css',
+      ),
+    ),
     '#fname' => $fname,
   );
+
   $element['fname'] = array(
     '#type' => 'hidden',
     '#value' => $fname,
@@ -208,14 +216,14 @@ function google_map_field_field_widget_form(&$form, &$form_state, $field, $insta
     '#title' => t('Latitude'),
     '#required' => $instance['required'],
     '#element_validate' => array('google_map_field_latlon_validate'),
-    '#default_value' => isset($items[$delta]['lat']) ? $items[$delta]['lat'] : NULL,
+    '#default_value' => isset($items[$delta]['lat']) ? $items[$delta]['lat'] : 51.51906840672028,
   );
   $element['lon'] = array(
     '#type' => 'textfield',
     '#title' => t('Longitude'),
     '#required' => $instance['required'],
     '#element_validate' => array('google_map_field_latlon_validate'),
-    '#default_value' => isset($items[$delta]['lon']) ? $items[$delta]['lon'] : NULL,
+    '#default_value' => isset($items[$delta]['lon']) ? $items[$delta]['lon'] : -0.11661621093753638,
   );
   $element['zoom'] = array(
     '#type' => 'textfield',
@@ -240,6 +248,18 @@ function google_map_field_field_widget_form(&$form, &$form_state, $field, $insta
     '#suffix' => '</div></div></div>',
   );
 
+  $settings = array(
+      'lat' => $element['lat']['#default_value'],
+      'lon' => $element['lon']['#default_value'],
+      'zoom' => $element['zoom']['#default_value'],
+      'fname' => $fname,
+  );
+
+  $form['#attached']['js'][] = array(
+    'data' => array('gmf_widget_form' => $settings),
+    'type' => 'setting',
+  );
+
   return $element;
 }
 
@@ -251,26 +271,6 @@ function google_map_field_latlon_validate($element, $form, &$form_state) {
     $field = implode('][', $element['#array_parents']);
     form_set_error($field, t('Invalid value - @title', array('@title' => $element['#title'])));
   }
-}
-/**
- * Function to add necessary JS and CSS after form has built.
- */
-function google_map_field_after_build($form, &$form_state) {
-  drupal_add_js(drupal_get_path('module', 'google_map_field') . '/js/google_map_field_widget_form.js', 'file');
-  drupal_add_css(drupal_get_path('module', 'google_map_field') . '/css/google_map_field.css');
-
-  // Build the inline JS to build the map.
-  $settings = array(
-    'gmf_widget_form' => array(
-      'lat' => is_numeric($form['lat']['#value']) ? $form['lat']['#value'] : 51.51906840672028,
-      'lon' => is_numeric($form['lon']['#value']) ? $form['lon']['#value'] : -0.11661621093753638,
-      'zoom' => is_numeric($form['zoom']['#value']) ? $form['zoom']['#value'] : 9,
-      'fname' => $form['#fname'],
-    ),
-  );
-  drupal_add_js($settings, 'setting');
-
-  return $form;
 }
 
 /**
@@ -323,7 +323,8 @@ function google_map_field_add_maps_api() {
       '#markup' => '<script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?sensor=false&key=' . variable_get('google_map_field_apikey', '') . '"></script>',
     );
     drupal_add_html_head($element, 'google_maps_api');
-  } else {
+  }
+  else {
     drupal_add_js('http://maps.googleapis.com/maps/api/js?sensor=false', 'external');
   }
 }

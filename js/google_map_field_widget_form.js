@@ -18,13 +18,13 @@ var google_map_field_map;
     attach: function (context) {
       // Get the settings for the map from the Drupal.settings object.
       var fname = Drupal.settings.gmf_widget_form['fname'];
-      var lat = Drupal.settings.gmf_widget_form['lat'];
-      var lon = Drupal.settings.gmf_widget_form['lon'];
-      var zoom = parseInt(Drupal.settings.gmf_widget_form['zoom']);
+      var lat = $("#edit-"+fname+"-und-0-lat").val();
+      var lon = $("#edit-"+fname+"-und-0-lon").val();
+      var zoom = $("#edit-"+fname+"-und-0-zoom").val();
       var latlng = new google.maps.LatLng(lat, lon);
       // Create the map and drop a marker on it at the specified position.
       var mapOptions = {
-        zoom: zoom,
+        zoom: parseInt(zoom),
         center: latlng,
         streetViewControl: false,
         mapTypeId: google.maps.MapTypeId.ROADMAP
@@ -71,10 +71,8 @@ function google_map_field_doCenter() {
     if (status == 'OK') {
       var latlng = new google.maps.LatLng(result[0].geometry.location.lat(), result[0].geometry.location.lng());
       google_map_field_map.panTo(latlng);
-      marker = new google.maps.Marker({
-        position: latlng,
-        map: google_map_field_map
-      });
+      marker.setPosition(latlng);
+      getCoords(latlng);
     } else {
       alert('Could not find location.');
     }
